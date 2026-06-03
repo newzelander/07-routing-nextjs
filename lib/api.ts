@@ -10,6 +10,7 @@ export interface FetchNotesParams {
   page: number;
   search: string;
   perPage: number;
+  tag?: NoteTag;
 }
 
 export interface FetchNotesResponse {
@@ -23,26 +24,20 @@ export interface CreateNoteData {
   tag: NoteTag;
 }
 
-export const fetchNotesByTag = async (
-  tag?: NoteTag,
-): Promise<FetchNotesResponse> => {
-  const params = tag ? { tag } : {};
-
-  const { data } = await axios.get<FetchNotesResponse>("/notes", {
-    params,
-  });
-
-  return data;
-};
-
 // GET notes
 export const fetchNotes = async ({
   page,
   search,
   perPage,
+  tag,
 }: FetchNotesParams): Promise<FetchNotesResponse> => {
   const { data } = await axios.get<FetchNotesResponse>("/notes", {
-    params: { page, search, perPage },
+    params: {
+      page,
+      search,
+      perPage,
+      ...(tag ? { tag } : {}),
+    },
   });
 
   return data;

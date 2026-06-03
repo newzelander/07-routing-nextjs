@@ -11,39 +11,43 @@ import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 
 import { fetchNotes } from "@/lib/api";
+import type { NoteTag } from "@/types/note";
+
 import css from "./NotesPage.module.css";
 
-export default function NotesClient() {
+export default function NotesClient({ tag }: { tag?: string }) {
   const [page, setPage] = useState(1);
-  const [inputValue, setInputValue] = useState("");
+  const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(false);
 
-  const handleSearch = useDebouncedCallback((value: string) => {
-    setSearch(value);
+  const safeTag = tag ?? "all";
+
+  const handleSearch = useDebouncedCallback((v: string) => {
+    setSearch(v);
     setPage(1);
   }, 500);
 
   const { data } = useQuery({
-    queryKey: ["notes", page, search],
+    queryKey: ["notes", safeTag, page, search],
     queryFn: () =>
       fetchNotes({
         page,
         search,
         perPage: 12,
+        tag: safeTag !== "all" ? (safeTag as NoteTag) : undefined,
       }),
-
-    placeholderData: keepPreviousData, //
+    placeholderData: keepPreviousData,
   });
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox
-          value={inputValue}
-          onChange={(value) => {
-            setInputValue(value);
-            handleSearch(value);
+          value={input}
+          onChange={(v) => {
+            setInput(v);
+            handleSearch(v);
           }}
         />
 
@@ -51,7 +55,7 @@ export default function NotesClient() {
           <Pagination
             pageCount={data.totalPages}
             currentPage={page}
-            onPageChange={(p: number) => setPage(p)}
+            onPageChange={setPage}
           />
         )}
 
